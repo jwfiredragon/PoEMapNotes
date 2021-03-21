@@ -4,7 +4,7 @@ import re
 import shutil
 import tkinter as tk
 from tempfile import NamedTemporaryFile
-from utils import parse_map_name
+from utils import parse_map_name, render_window
 
 new_note = ''
 def get_input():
@@ -31,22 +31,14 @@ if not re.search('Error', map_name):
 		for row in reader:
 			if re.search(row[0], map_name):
 				map_found = True
-
-				note_window_root.title('PoE Map Notes: ' + row[0])
-				note_window.insert(tk.END, row[1])
-				tk.mainloop()
-				
+				render_window(note_window_root, note_window, row[0], row[1])
 				writer.writerow([row[0], new_note if new_note else row[1]])
 			else:
 				writer.writerow(row)
 
 		if map_found == False:
-			note_window_root.title('PoE Map Notes: Error')
-			note_window.insert(tk.END, 'Error: Map not found')
-			tk.mainloop()
+			render_window(note_window_root, note_window, 'Error', 'Error: Map not found')
 
 	shutil.move(temp_file.name, data_file)
 else:
-	note_window_root.title('PoE Map Notes: Error')
-	note_window.insert(tk.END, map_name)
-	tk.mainloop()
+	render_window(note_window_root, note_window, 'Error', map_name)
