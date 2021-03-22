@@ -1,3 +1,4 @@
+import pynput
 import re
 import tkinter as tk
 
@@ -15,4 +16,12 @@ def parse_map_name(map_raw):
 def render_window(root, window, title, text):
 	root.title('PoE Map Notes: ' + title)
 	window.insert(tk.END, text)
+	window.focus_set()
 	tk.mainloop()
+
+def position_window(root, width, height):
+	mouse_pos = pynput.mouse.Controller().position
+	screen_size = [root.winfo_screenwidth(), root.winfo_screenheight()]
+	window_pos = [mouse_pos[0] - width/2 if mouse_pos[0] + width/2 < screen_size[0] else screen_size[0] - width,
+				  mouse_pos[1] - height]
+	root.geometry('%dx%d+%d+%d' %(width, height, window_pos[0], window_pos[1]))
