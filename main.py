@@ -6,7 +6,6 @@ import shutil
 import tkinter as tk
 import utils as u
 from tempfile import NamedTemporaryFile
-import time
 
 new_note = ''
 
@@ -35,7 +34,7 @@ def main_loop():
 
 			map_found = False
 			for row in reader:
-				if re.search(row[0], map_name):
+				if re.search(row[0], '^{}$'.format(map_name)):
 					map_found = True
 					u.render_window(note_window_root, note_window, row[0], row[1])
 					writer.writerow([row[0], new_note if new_note else row[1]])
