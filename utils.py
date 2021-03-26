@@ -22,6 +22,7 @@ def parse_map_name(map_raw):
 
 def render_window(root, window, title, text):
 	root.title('PoE Map Notes: ' + title)
+	window.delete('1.0', tk.END)
 	window.insert(tk.END, text)
 	window.focus_set()
 

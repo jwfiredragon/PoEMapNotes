@@ -5,6 +5,7 @@ import re
 import shutil
 import tkinter as tk
 import utils as u
+from pynput.keyboard import Key, Controller
 from tempfile import NamedTemporaryFile
 
 data_file = 'map_notes.csv'
@@ -28,11 +29,16 @@ class App(tk.Tk):
 		keyboard.add_hotkey('ctrl+shift+q', self.open)
 
 	def open(self):
-		keyboard.send('ctrl+c')
+		# Using pynput to send keys since keyboard.send is async and runs too late
+		Controller().press(Key.ctrl)
+		Controller().press('c')
+		Controller().release(Key.ctrl)
+		Controller().release('c')
+
 		self.map_name = u.parse_map_name(pyperclip.paste())
 		u.position_window(self, 400, 200)
 
-		if not re.search('Error', self.map_name):
+		if not re.search('Error:', self.map_name):
 			with open(data_file, 'r') as csv_file:
 				reader = csv.reader(csv_file)
 				map_found = False
@@ -54,7 +60,7 @@ class App(tk.Tk):
 	def close(self):
 		self.new_note = self.editor.get('1.0', 'end-1c')
 
-		if not re.search('Error', self.new_note):
+		if not re.search('Error:', self.new_note):
 			temp_file = NamedTemporaryFile('w+t', newline = '', delete = False)
 
 			with open(data_file, 'r') as csv_file, temp_file:
