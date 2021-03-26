@@ -24,7 +24,6 @@ def render_window(root, window, title, text):
 	root.title('PoE Map Notes: ' + title)
 	window.delete('1.0', tk.END)
 	window.insert(tk.END, text)
-	window.focus_set()
 
 def position_window(root, width, height):
 	mouse_pos = root.winfo_pointerxy()

@@ -56,6 +56,7 @@ class App(tk.Tk):
 
 		self.update()
 		self.deiconify()
+		self.editor.focus()
 
 	def close(self):
 		self.new_note = self.editor.get('1.0', 'end-1c')
