@@ -7,49 +7,73 @@ import tkinter as tk
 import utils as u
 from tempfile import NamedTemporaryFile
 
-new_note = ''
+data_file = 'map_notes.csv'
 
-def main_loop():
-	keyboard.send('ctrl+c')
-	map_name = u.parse_map_name(pyperclip.paste())
-	
-	def get_input():
-		global new_note
-		new_note = note_window.get('1.0', 'end-1c')
+# https://stackoverflow.com/questions/50570446/python-tkinter-hide-and-show-window-via-hotkeys
+class App(tk.Tk):
+	new_note = ''
+	map_name = ''
 
-	note_window_root = tk.Tk()
-	u.position_window(note_window_root, 400, 190)
-	note_window = tk.Text(note_window_root, height = 10, width = 50)
-	note_window.pack()
-	save_button = tk.Button(note_window_root, height = 1, width = 15, text = 'Save and close', command = lambda: [get_input(), note_window_root.destroy()])
-	save_button.pack()
+	def __init__(self):
+		super().__init__()
+		self.geometry("400x200")
+		self.title("Main frame")
 
-	if not re.search('Error', map_name):
-		data_file = 'map_notes.csv'
-		temp_file = NamedTemporaryFile('w+t', newline = '', delete = False)
+		self.editor = tk.Text(self, height=10)
+		self.editor.pack()
+		self.button = tk.Button(self, text = 'Save and close', command = self.close)
+		self.button.pack()
+		self.withdraw()
 
-		with open(data_file, 'r') as csvFile, temp_file:
-			reader = csv.reader(csvFile)
-			writer = csv.writer(temp_file)
+		keyboard.add_hotkey('ctrl+shift+q', self.open)
 
-			map_found = False
-			for row in reader:
-				if re.search(row[0], '^{}$'.format(map_name)):
-					map_found = True
-					u.render_window(note_window_root, note_window, row[0], row[1])
-					writer.writerow([row[0], new_note if new_note else row[1]])
-				else:
-					writer.writerow(row)
+	def open(self):
+		keyboard.send('ctrl+c')
+		self.map_name = u.parse_map_name(pyperclip.paste())
+		u.position_window(self, 400, 200)
 
-			if map_found == False:
-				u.render_window(note_window_root, note_window, 'Error', 'Error: Map not found')
+		if not re.search('Error', self.map_name):
+			with open(data_file, 'r') as csv_file:
+				reader = csv.reader(csv_file)
+				map_found = False
 
-		shutil.move(temp_file.name, data_file)
-	else:
-		u.render_window(note_window_root, note_window, 'Error', map_name)
+				for row in reader:
+					if re.search(row[0], '^{}$'.format(self.map_name)):
+						map_found = True
+						u.render_window(self, self.editor, row[0], row[1])
+
+				if map_found == False:
+					u.render_window(self, self.editor, 'Error', 'Error: Map not found.')
+
+		else:
+			u.render_window(self, self.editor, 'Error', self.map_name)
+
+		self.update()
+		self.deiconify()
+
+	def close(self):
+		self.new_note = self.editor.get('1.0', 'end-1c')
+
+		if not re.search('Error', self.new_note):
+			temp_file = NamedTemporaryFile('w+t', newline = '', delete = False)
+
+			with open(data_file, 'r') as csv_file, temp_file:
+				reader = csv.reader(csv_file)
+				writer = csv.writer(temp_file)
+
+				for row in reader:
+					if re.search(row[0], '^{}$'.format(self.map_name)):
+						writer.writerow([row[0], self.new_note])
+					else:
+						writer.writerow(row)
+
+			shutil.move(temp_file.name, data_file)
+
+		self.new_note = ''
+		self.update()
+		self.withdraw()
 
 u.gen_map_list()
 
-while True:
-	if keyboard.is_pressed('ctrl+shift+q'):
-		main_loop()
+if __name__ == "__main__":
+	App().mainloop()
