@@ -26,9 +26,10 @@ class App(tk.Tk):
 		self.button.pack()
 		self.withdraw()
 
-		keyboard.add_hotkey('ctrl+shift+q', self.open)
+		keyboard.add_hotkey('ctrl+shift+q', self.open_map)
+		keyboard.add_hotkey('ctrl+shift+a', self.open_note)
 
-	def open(self):
+	def open_map(self):
 		# Using pynput to send keys since keyboard.send is async and runs too late
 		Controller().press(Key.ctrl)
 		Controller().press('c')
@@ -36,6 +37,13 @@ class App(tk.Tk):
 		Controller().release('c')
 
 		self.map_name = u.parse_map_name(pyperclip.paste())
+		self.render()
+
+	def open_note(self):
+		self.map_name = 'General Notes'
+		self.render()
+
+	def render(self):
 		u.position_window(self, 400, 200)
 
 		if not re.search('Error:', self.map_name):

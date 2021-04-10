@@ -11,6 +11,7 @@ for base_item in base_items.values():
 			map_list.append(base_item['name'].split(' Map')[0])
 # remove duplicate values
 map_list = list(set(map_list))
+map_list.append('General Notes')
 map_list.sort()
 
 data_file = open('map_data.csv', 'w', newline = '')
