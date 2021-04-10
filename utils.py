@@ -1,3 +1,4 @@
+import configparser
 import csv
 import os
 import re
@@ -28,13 +29,38 @@ def render_window(root, window, title, text):
 def position_window(root, width, height):
 	mouse_pos = root.winfo_pointerxy()
 	screen_size = [root.winfo_screenwidth(), root.winfo_screenheight()]
-	window_pos = [0, mouse_pos[1] - height]
+	window_pos = [0, max(mouse_pos[1] - height - 10, 0)]
 	if mouse_pos[0] + width/2 < screen_size[0] and mouse_pos[0] - width/2 > 0:
 		window_pos[0] = mouse_pos[0] - width/2
 	elif mouse_pos[0] + width/2 >= screen_size[0]:
 		window_pos[0] = screen_size[0] - width
 
 	root.geometry('%dx%d+%d+%d' %(width, height, window_pos[0], window_pos[1]))
+
+def gen_config():
+	config_default = [['Hotkeys', 'open_map_note', 'ctrl+shift+q'],
+					  ['Hotkeys', 'open_general_note', 'ctrl+shift+a'],
+					  ['Window', 'width', '400'],
+					  ['Window', 'height', '200'],
+					  ['Other', 'open_on_enter_map', 'false'],
+					  ['Other', 'client_txt_path', 'C:\\Program Files (x86)\\Steam\\steamapps\\common\\Path of Exile\\logs\\Client.txt']]
+
+	if not os.path.isfile('config.ini'):
+		config_file = open('config.ini', 'w')
+		config_file.close()
+
+	config = configparser.ConfigParser()
+	config.read('config.ini')
+
+	for option in config_default:
+		if not config.has_option(option[0], option[1]):
+			if not config.has_section(option[0]):
+				config.add_section(option[0])
+			config.set(option[0], option[1], option[2])
+
+	with open('config.ini', 'w') as configfile:
+		config.write(configfile)
+
 
 def gen_map_list():
 	map_list_data = []

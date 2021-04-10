@@ -1,5 +1,7 @@
+import configparser
 import csv
 import keyboard
+import math
 import pyperclip
 import re
 import shutil
@@ -8,7 +10,13 @@ import utils as u
 from pynput.keyboard import Key, Controller
 from tempfile import NamedTemporaryFile
 
-data_file = 'map_notes.csv'
+DATA_FILE = 'map_notes.csv'
+MAP_NOTE_HOTKEY = ''
+GENERAL_NOTE_HOTKEY = ''
+WINDOW_WIDTH = 0
+WINDOW_HEIGHT = 0
+OPEN_ON_ENTER = False
+CLIENT_PATH = ''
 
 # https://stackoverflow.com/questions/50570446/python-tkinter-hide-and-show-window-via-hotkeys
 class App(tk.Tk):
@@ -17,17 +25,17 @@ class App(tk.Tk):
 
 	def __init__(self):
 		super().__init__()
-		self.geometry("400x200")
-		self.title("Main frame")
+		self.geometry('400x200')
+		self.title('Main frame')
 
-		self.editor = tk.Text(self, height=10)
+		self.editor = tk.Text(self, width = math.floor(WINDOW_WIDTH/8), height = math.floor((WINDOW_HEIGHT-30)/16))
 		self.editor.pack()
 		self.button = tk.Button(self, text = 'Save and close', command = self.close)
 		self.button.pack()
 		self.withdraw()
 
-		keyboard.add_hotkey('ctrl+shift+q', self.open_map)
-		keyboard.add_hotkey('ctrl+shift+a', self.open_note)
+		keyboard.add_hotkey(MAP_NOTE_HOTKEY, self.open_map)
+		keyboard.add_hotkey(GENERAL_NOTE_HOTKEY, self.open_general)
 
 	def open_map(self):
 		# Using pynput to send keys since keyboard.send is async and runs too late
@@ -39,15 +47,18 @@ class App(tk.Tk):
 		self.map_name = u.parse_map_name(pyperclip.paste())
 		self.render()
 
-	def open_note(self):
-		self.map_name = 'General Notes'
+	def open_general(self):
+		self.open_note('General Notes')
+
+	def open_note(self, map_name):
+		self.map_name = map_name
 		self.render()
 
 	def render(self):
-		u.position_window(self, 400, 200)
+		u.position_window(self, WINDOW_WIDTH, WINDOW_HEIGHT)
 
 		if not re.search('Error:', self.map_name):
-			with open(data_file, 'r') as csv_file:
+			with open(DATA_FILE, 'r') as csv_file:
 				reader = csv.reader(csv_file)
 				map_found = False
 
@@ -72,7 +83,7 @@ class App(tk.Tk):
 		if not re.search('Error:', self.new_note):
 			temp_file = NamedTemporaryFile('w+t', newline = '', delete = False)
 
-			with open(data_file, 'r') as csv_file, temp_file:
+			with open(DATA_FILE, 'r') as csv_file, temp_file:
 				reader = csv.reader(csv_file)
 				writer = csv.writer(temp_file)
 
@@ -82,13 +93,27 @@ class App(tk.Tk):
 					else:
 						writer.writerow(row)
 
-			shutil.move(temp_file.name, data_file)
+			shutil.move(temp_file.name, DATA_FILE)
 
 		self.new_note = ''
 		self.update()
 		self.withdraw()
 
-u.gen_map_list()
+def read_config():
+	config = configparser.ConfigParser()
+	config.read('config.ini')
 
-if __name__ == "__main__":
+	global MAP_NOTE_HOTKEY, GENERAL_NOTE_HOTKEY, WINDOW_WIDTH, WINDOW_HEIGHT, OPEN_ON_ENTER, CLIENT_PATH
+
+	MAP_NOTE_HOTKEY = config.get('Hotkeys', 'open_map_note')
+	GENERAL_NOTE_HOTKEY = config.get('Hotkeys', 'open_general_note')
+	WINDOW_WIDTH = config.getint('Window', 'width')
+	WINDOW_HEIGHT = config.getint('Window', 'height')
+	OPEN_ON_ENTER = config.getboolean('Other', 'open_on_enter_map')
+	CLIENT_PATH = config.get('Other', 'client_txt_path')
+
+if __name__ == '__main__':
+	u.gen_config()
+	u.gen_map_list()
+	read_config()
 	App().mainloop()
