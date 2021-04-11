@@ -7,11 +7,12 @@ A little utility to put notes on your maps. Will add features as I think of them
 * Download the [latest release](https://github.com/jwfiredragon/PoEMapNotes/releases/) and place it wherever. If updating, simply replace the existing `main.exe`.
 * Run `main.exe`. On the first startup, wait for it to generate `map_notes.csv` and `config.ini`. This may take a few seconds.
 * Ingame, press CTRL+SHIFT+C while mousing over a map to access its notes, or press CTRL+SHIFT+X to open a general notes window.
+	* Note: If you are having trouble with getting the hotkeys to work, try running the app as an administrator.
 * Type your notes the text box and click the 'Save and Close' button to close the window.
 * To actually shut down the utility altogether, click the X in the upper right of the window.
 * `config.ini` settings:
 	* Hotkeys: set hotkeys for various actions. Special keys should be typed out literally in all lowercase ('ctrl', 'shift', 'alt'). Join keys with '+'.
-	* Window: window size in pixels.
+	* Window: `width` and `height` are the window size in pixels. `fixed_location` opens the window at [`fixed_x`, `fixed_y`] if true.
 	* `open_on_enter` automatically opens the map's note on entering a map if true.
 	* `client_txt_path` is the full path to your client.txt file, without quotation marks.
 

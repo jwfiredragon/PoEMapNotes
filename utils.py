@@ -36,15 +36,18 @@ def render_window(root, window, title, text):
 	window.delete('1.0', tk.END)
 	window.insert(tk.END, text)
 
-def position_window(root, width, height):
-	mouse_pos = root.winfo_pointerxy()
-	screen_size = [root.winfo_screenwidth(), root.winfo_screenheight()]
+def position_window(root, width, height, fixed_location, fl_x, fl_y):
+	if fixed_location:
+		window_pos = [fl_x, fl_y]
+	else:
+		mouse_pos = root.winfo_pointerxy()
+		screen_size = [root.winfo_screenwidth(), root.winfo_screenheight()]
 
-	window_pos = [0, max(mouse_pos[1] - height - 10, 0)]
-	if mouse_pos[0] + width/2 < screen_size[0] and mouse_pos[0] - width/2 > 0:
-		window_pos[0] = mouse_pos[0] - width/2
-	elif mouse_pos[0] + width/2 >= screen_size[0]:
-		window_pos[0] = screen_size[0] - width
+		window_pos = [0, max(mouse_pos[1] - height - 10, 0)]
+		if mouse_pos[0] + width/2 < screen_size[0] and mouse_pos[0] - width/2 > 0:
+			window_pos[0] = mouse_pos[0] - width/2
+		elif mouse_pos[0] + width/2 >= screen_size[0]:
+			window_pos[0] = screen_size[0] - width
 
 	root.geometry('%dx%d+%d+%d' %(width, height, window_pos[0], window_pos[1]))
 
@@ -53,6 +56,9 @@ def gen_config():
 					  ['Hotkeys', 'open_general_note', 'ctrl+shift+x'],
 					  ['Window', 'width', '400'],
 					  ['Window', 'height', '200'],
+					  ['Window', 'fixed_location', 'false'],
+					  ['Window', 'fixed_x', '0'],
+					  ['Window', 'fixed_y', '0'],
 					  ['Other', 'open_on_enter_map', 'true'],
 					  ['Other', 'client_txt_path', 'C:\\Program Files (x86)\\Steam\\steamapps\\common\\Path of Exile\\logs\\Client.txt']]
 

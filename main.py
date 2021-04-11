@@ -12,12 +12,15 @@ from pynput.keyboard import Key, Controller
 from tempfile import NamedTemporaryFile
 
 DATA_FILE = 'map_notes.csv'
-MAP_NOTE_HOTKEY = ''
-GENERAL_NOTE_HOTKEY = ''
-WINDOW_WIDTH = 0
-WINDOW_HEIGHT = 0
-OPEN_ON_ENTER = False
-CLIENT_PATH = ''
+MAP_NOTE_HOTKEY = 'ctrl+shift+c'
+GENERAL_NOTE_HOTKEY = 'ctrl+shift+x'
+WINDOW_WIDTH = 400
+WINDOW_HEIGHT = 200
+FIXED_LOCATION = False
+FL_X = 0
+FL_Y = 0
+OPEN_ON_ENTER = True
+CLIENT_PATH = 'C:\\Program Files (x86)\\Steam\\steamapps\\common\\Path of Exile\\logs\\Client.txt'
 
 # https://stackoverflow.com/questions/50570446/python-tkinter-hide-and-show-window-via-hotkeys
 class App(tk.Tk):
@@ -53,7 +56,7 @@ class App(tk.Tk):
 		self.render()
 
 	def render(self, suppress_not_found = False):
-		u.position_window(self, WINDOW_WIDTH, WINDOW_HEIGHT)
+		u.position_window(self, WINDOW_WIDTH, WINDOW_HEIGHT, FIXED_LOCATION, FL_X, FL_Y)
 
 		if not re.search('Error:', self.map_name):
 			with open(DATA_FILE, 'r') as csv_file:
@@ -116,7 +119,7 @@ class App(tk.Tk):
 		self.after(100, self.process_client_txt)
 
 def read_config():
-	global MAP_NOTE_HOTKEY, GENERAL_NOTE_HOTKEY, WINDOW_WIDTH, WINDOW_HEIGHT, OPEN_ON_ENTER, CLIENT_PATH
+	global MAP_NOTE_HOTKEY, GENERAL_NOTE_HOTKEY, WINDOW_WIDTH, WINDOW_HEIGHT, FIXED_LOCATION, FL_X, FL_Y, OPEN_ON_ENTER, CLIENT_PATH
 
 	config = configparser.ConfigParser()
 	config.read('config.ini')
@@ -125,6 +128,9 @@ def read_config():
 	GENERAL_NOTE_HOTKEY = config.get('Hotkeys', 'open_general_note')
 	WINDOW_WIDTH = config.getint('Window', 'width')
 	WINDOW_HEIGHT = config.getint('Window', 'height')
+	FIXED_LOCATION = config.getboolean('Window', 'fixed_location')
+	FL_X = config.getint('Window', 'fixed_x')
+	FL_Y = config.getint('Window', 'fixed_y')
 	OPEN_ON_ENTER = config.getboolean('Other', 'open_on_enter_map')
 	CLIENT_PATH = config.get('Other', 'client_txt_path')
 
