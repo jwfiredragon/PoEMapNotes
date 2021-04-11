@@ -29,6 +29,7 @@ def render_window(root, window, title, text):
 def position_window(root, width, height):
 	mouse_pos = root.winfo_pointerxy()
 	screen_size = [root.winfo_screenwidth(), root.winfo_screenheight()]
+
 	window_pos = [0, max(mouse_pos[1] - height - 10, 0)]
 	if mouse_pos[0] + width/2 < screen_size[0] and mouse_pos[0] - width/2 > 0:
 		window_pos[0] = mouse_pos[0] - width/2
@@ -66,10 +67,11 @@ def gen_map_list():
 	map_list_data = []
 	map_list_curr = []
 
-	map_data_file = open('map_data.csv', 'r')
-	reader = csv.reader(map_data_file)
-	for row in reader:
-		map_list_data.append(row[0])
+	with open('map_data.csv', 'r') as map_data_file:
+		reader = csv.reader(map_data_file)
+
+		for row in reader:
+			map_list_data.append(row[0])
 
 	if not os.path.isfile('map_notes.csv'):
 		new_note_file = open('map_notes.csv', 'w')

@@ -4,9 +4,11 @@ A little utility to put notes on your maps. Will add features as I think of them
 
 ## Instructions
 
-* Download the latest release and unzip to wherever. If updating, just replace the existing files, it won't delete your existing notes.
-* Run main.exe. On first startup after every update, wait for it to generate/update `map_notes.csv` and `config.ini`. May take a few seconds.
-* Ingame, press CTRL+SHIFT+Q while mousing over a map to access its notes, or press CTRL+SHIFT+A to open a general notes window. Type your notes the text box and click the 'Save and Close' button to close the window.
+* Download the latest release and unzip to wherever. If updating, just replace the existing files, it won't delete your existing notes/config.
+* Run main.exe. On the first startup, wait for it to generate `map_notes.csv` and `config.ini`. May take a few seconds.
+* Ingame, press CTRL+SHIFT+Q while mousing over a map to access its notes, or press CTRL+SHIFT+A to open a general notes window.
+* Type your notes the text box and click the 'Save and Close' button to close the window.
+* You can modify hotkeys, window size, etc. in `config.ini`.
 * To actually shut down the utility altogether, click the X in the upper right of the window.
 
 ## Security

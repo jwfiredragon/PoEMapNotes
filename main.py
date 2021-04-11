@@ -5,6 +5,7 @@ import math
 import pyperclip
 import re
 import shutil
+import tailer
 import tkinter as tk
 import utils as u
 from pynput.keyboard import Key, Controller
@@ -22,12 +23,12 @@ CLIENT_PATH = ''
 class App(tk.Tk):
 	new_note = ''
 	map_name = ''
+	last_map = ''
 
 	def __init__(self):
 		super().__init__()
 		self.geometry('400x200')
 		self.title('Main frame')
-
 		self.editor = tk.Text(self, width = math.floor(WINDOW_WIDTH/8), height = math.floor((WINDOW_HEIGHT-30)/16))
 		self.editor.pack()
 		self.button = tk.Button(self, text = 'Save and close', command = self.close)
@@ -48,13 +49,10 @@ class App(tk.Tk):
 		self.render()
 
 	def open_general(self):
-		self.open_note('General Notes')
-
-	def open_note(self, map_name):
-		self.map_name = map_name
+		self.map_name = 'General Notes'
 		self.render()
 
-	def render(self):
+	def render(self, suppress_not_found = False):
 		u.position_window(self, WINDOW_WIDTH, WINDOW_HEIGHT)
 
 		if not re.search('Error:', self.map_name):
@@ -63,12 +61,15 @@ class App(tk.Tk):
 				map_found = False
 
 				for row in reader:
-					if re.search(row[0], '^{}$'.format(self.map_name)):
+					if re.search('^{}$'.format(self.map_name), row[0]):
 						map_found = True
 						u.render_window(self, self.editor, row[0], row[1])
 
-				if map_found == False:
-					u.render_window(self, self.editor, 'Error', 'Error: Map not found.')
+				if not map_found:
+					if suppress_not_found:
+						return
+					else:
+						u.render_window(self, self.editor, 'Error', 'Error: Map not found.')
 
 		else:
 			u.render_window(self, self.editor, 'Error', self.map_name)
@@ -88,7 +89,7 @@ class App(tk.Tk):
 				writer = csv.writer(temp_file)
 
 				for row in reader:
-					if re.search(row[0], '^{}$'.format(self.map_name)):
+					if re.search('^{}$'.format(self.map_name), row[0]):
 						writer.writerow([row[0], self.new_note])
 					else:
 						writer.writerow(row)
@@ -98,12 +99,26 @@ class App(tk.Tk):
 		self.new_note = ''
 		self.update()
 		self.withdraw()
+	
+	def process_client_txt(self):
+		# https://stackoverflow.com/questions/62241472/using-python-and-tkinter-how-would-i-run-code-every-loop-of-mainloop
+		with open(CLIENT_PATH, 'r', encoding = 'utf8') as client_txt:
+			lines = tailer.tail(client_txt, 2)
+
+			if re.search('You have entered', lines[1]):
+				map_name = lines[1].split('entered ')[1].replace('.', '')
+				if not map_name == self.last_map:
+					self.last_map = map_name
+					self.map_name = map_name
+					self.render(True)
+
+		self.after(100, self.process_client_txt)
 
 def read_config():
+	global MAP_NOTE_HOTKEY, GENERAL_NOTE_HOTKEY, WINDOW_WIDTH, WINDOW_HEIGHT, OPEN_ON_ENTER, CLIENT_PATH
+
 	config = configparser.ConfigParser()
 	config.read('config.ini')
-
-	global MAP_NOTE_HOTKEY, GENERAL_NOTE_HOTKEY, WINDOW_WIDTH, WINDOW_HEIGHT, OPEN_ON_ENTER, CLIENT_PATH
 
 	MAP_NOTE_HOTKEY = config.get('Hotkeys', 'open_map_note')
 	GENERAL_NOTE_HOTKEY = config.get('Hotkeys', 'open_general_note')
@@ -116,4 +131,8 @@ if __name__ == '__main__':
 	u.gen_config()
 	u.gen_map_list()
 	read_config()
-	App().mainloop()
+
+	app = App()
+	if OPEN_ON_ENTER:
+		app.after(100, app.process_client_txt)
+	app.mainloop()
