@@ -11,9 +11,9 @@ def parse_map_name(map_raw):
 
 	try:
 		if re.search('Map', map_parse[1]):
-			map_name = map_parse[1]
+			map_name = map_parse[1].split(' ')[0]
 		elif re.search('Map', map_parse[2]):
-			map_name = map_parse[2]
+			map_name = map_parse[2].split(' ')[0]
 		else:
 			map_name = 'Error: Not a map.'
 	except IndexError:

@@ -23,6 +23,7 @@ Windows antivirus may flag this as a suspicious app. I promise it's safe, you ca
 
 No guarantee on when any of these will be finished.
 
+* Proper handling for unique maps
 * Notes on individual items (for Harvest crafting and such)
 
 ## Images
