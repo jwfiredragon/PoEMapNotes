@@ -64,6 +64,7 @@ class App(tk.Tk):
 					if re.search('^{}$'.format(self.map_name), row[0]):
 						map_found = True
 						u.render_window(self, self.editor, row[0], row[1])
+						break
 
 				if not map_found:
 					if suppress_not_found:

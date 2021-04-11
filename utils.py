@@ -1,5 +1,6 @@
 import configparser
 import csv
+import map_data
 import os
 import re
 import shutil
@@ -11,13 +12,22 @@ def parse_map_name(map_raw):
 
 	try:
 		if re.search('Map', map_parse[1]):
-			map_name = map_parse[1].split(' ')[0]
+			map_name = map_parse[1]
 		elif re.search('Map', map_parse[2]):
-			map_name = map_parse[2].split(' ')[0]
+			map_name = map_parse[2]
 		else:
-			map_name = 'Error: Not a map.'
+			return 'Error: Not a map.'
 	except IndexError:
-		map_name = 'Error: Failed to parse map.'
+		return 'Error: Failed to parse map.'
+
+	# strip prefix/suffix as necessary
+	if re.search('Magic', map_parse[0]):
+		for prefix in map_data.PREFIX_LIST:
+			if map_name.split(' ')[0] == prefix:
+				map_name = map_name.replace(prefix + ' ', '')
+				break
+	map_name = map_name.replace('Superior ', '')
+	map_name = map_name.split(' Map')[0]
 
 	return map_name
 
@@ -39,11 +49,11 @@ def position_window(root, width, height):
 	root.geometry('%dx%d+%d+%d' %(width, height, window_pos[0], window_pos[1]))
 
 def gen_config():
-	config_default = [['Hotkeys', 'open_map_note', 'ctrl+shift+q'],
-					  ['Hotkeys', 'open_general_note', 'ctrl+shift+a'],
+	config_default = [['Hotkeys', 'open_map_note', 'ctrl+shift+c'],
+					  ['Hotkeys', 'open_general_note', 'ctrl+shift+x'],
 					  ['Window', 'width', '400'],
 					  ['Window', 'height', '200'],
-					  ['Other', 'open_on_enter_map', 'false'],
+					  ['Other', 'open_on_enter_map', 'true'],
 					  ['Other', 'client_txt_path', 'C:\\Program Files (x86)\\Steam\\steamapps\\common\\Path of Exile\\logs\\Client.txt']]
 
 	if not os.path.isfile('config.ini'):
@@ -64,15 +74,6 @@ def gen_config():
 
 
 def gen_map_list():
-	map_list_data = []
-	map_list_curr = []
-
-	with open('map_data.csv', 'r') as map_data_file:
-		reader = csv.reader(map_data_file)
-
-		for row in reader:
-			map_list_data.append(row[0])
-
 	if not os.path.isfile('map_notes.csv'):
 		new_note_file = open('map_notes.csv', 'w')
 		new_note_file.close()
@@ -84,12 +85,13 @@ def gen_map_list():
 	with open(note_file_name, 'r', newline = '') as note_file, temp_file:
 		reader = csv.reader(note_file)
 		writer = csv.writer(temp_file)
+		map_list_curr = []
 
 		for row in reader:
 			map_list_curr.append(row[0])
 			writer.writerow(row)
 
-		map_list_diff = [map for map in map_list_data if map not in map_list_curr]
+		map_list_diff = [map for map in map_data.MAP_LIST if map not in map_list_curr]
 		for map in map_list_diff:
 			writer.writerow([map, ''])
 
