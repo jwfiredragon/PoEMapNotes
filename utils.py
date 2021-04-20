@@ -21,7 +21,9 @@ def parse_map_name(map_raw):
 		return 'Error: Failed to parse map.'
 
 	# strip prefix/suffix as necessary
-	if re.search('Magic', map_parse[0]):
+	# special exception for vaal pyramid because it's evil
+	# handling for vaal temple is literally impossible but those are usually rare anyways
+	if re.search('Magic', map_parse[0]) and not re.search('^Vaal Pyramid', map_parse[0]):
 		for prefix in map_data.PREFIX_LIST:
 			if map_name.split(' ')[0] == prefix:
 				map_name = map_name.replace(prefix + ' ', '')
@@ -59,6 +61,7 @@ def gen_config():
 					  ['Window', 'fixed_location', 'false'],
 					  ['Window', 'fixed_x', '0'],
 					  ['Window', 'fixed_y', '0'],
+					  ['Other', 'font_size', '10'],
 					  ['Other', 'open_on_enter_map', 'true'],
 					  ['Other', 'client_txt_path', 'C:\\Program Files (x86)\\Steam\\steamapps\\common\\Path of Exile\\logs\\Client.txt']]
 

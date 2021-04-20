@@ -1,12 +1,14 @@
 import configparser
 import csv
 import keyboard
+import map_data
 import math
 import pyperclip
 import re
 import shutil
 import tailer
 import tkinter as tk
+import tkinter.font as tkf
 import utils as u
 from pynput.keyboard import Key, Controller
 from tempfile import NamedTemporaryFile
@@ -19,6 +21,7 @@ WINDOW_HEIGHT = 200
 FIXED_LOCATION = False
 FL_X = 0
 FL_Y = 0
+FONT_SIZE = 10
 OPEN_ON_ENTER = True
 CLIENT_PATH = 'C:\\Program Files (x86)\\Steam\\steamapps\\common\\Path of Exile\\logs\\Client.txt'
 
@@ -26,16 +29,18 @@ CLIENT_PATH = 'C:\\Program Files (x86)\\Steam\\steamapps\\common\\Path of Exile\
 class App(tk.Tk):
 	new_note = ''
 	map_name = ''
-	last_map = ''
+	last_zone = ''
+	font = None
 
 	def __init__(self):
 		super().__init__()
 		self.geometry('400x200')
 		self.title('Main frame')
-		self.editor = tk.Text(self, width = math.floor(WINDOW_WIDTH/8), height = math.floor((WINDOW_HEIGHT-30)/16))
-		self.editor.pack()
+		self.font = tkf.Font(size = FONT_SIZE)
 		self.button = tk.Button(self, text = 'Save and close', command = self.close)
-		self.button.pack()
+		self.button.pack(side = tk.BOTTOM)
+		self.editor = tk.Text(self, font = self.font)
+		self.editor.pack(fill = tk.BOTH)
 		self.withdraw()
 
 		keyboard.add_hotkey(MAP_NOTE_HOTKEY, self.open_map)
@@ -55,7 +60,7 @@ class App(tk.Tk):
 		self.map_name = 'General Notes'
 		self.render()
 
-	def render(self, suppress_not_found = False):
+	def render(self):
 		u.position_window(self, WINDOW_WIDTH, WINDOW_HEIGHT, FIXED_LOCATION, FL_X, FL_Y)
 
 		if not re.search('Error:', self.map_name):
@@ -70,10 +75,7 @@ class App(tk.Tk):
 						break
 
 				if not map_found:
-					if suppress_not_found:
-						return
-					else:
-						u.render_window(self, self.editor, 'Error', 'Error: Map not found.')
+					u.render_window(self, self.editor, 'Error', 'Error: Map not found.')
 
 		else:
 			u.render_window(self, self.editor, 'Error', self.map_name)
@@ -107,19 +109,22 @@ class App(tk.Tk):
 	def process_client_txt(self):
 		# https://stackoverflow.com/questions/62241472/using-python-and-tkinter-how-would-i-run-code-every-loop-of-mainloop
 		with open(CLIENT_PATH, 'r', encoding = 'utf8') as client_txt:
-			lines = tailer.tail(client_txt, 2)
+			lines = tailer.tail(client_txt, 6)
 
-			if re.search('You have entered', lines[1]):
-				map_name = lines[1].split('entered ')[1].replace('.', '')
-				if not map_name == self.last_map:
-					self.last_map = map_name
-					self.map_name = map_name
-					self.render(True)
+			for line in lines:
+				if re.search('You have entered', line):
+					zone_name = line.split('entered ')[1].replace('.', '')
+					if not self.last_zone == zone_name:
+						self.last_zone = zone_name
+						if zone_name in map_data.MAP_LIST:
+							self.map_name = zone_name
+							self.render()
+							break
 
 		self.after(100, self.process_client_txt)
 
 def read_config():
-	global MAP_NOTE_HOTKEY, GENERAL_NOTE_HOTKEY, WINDOW_WIDTH, WINDOW_HEIGHT, FIXED_LOCATION, FL_X, FL_Y, OPEN_ON_ENTER, CLIENT_PATH
+	global MAP_NOTE_HOTKEY, GENERAL_NOTE_HOTKEY, WINDOW_WIDTH, WINDOW_HEIGHT, FIXED_LOCATION, FL_X, FL_Y, FONT_SIZE, OPEN_ON_ENTER, CLIENT_PATH
 
 	config = configparser.ConfigParser()
 	config.read('config.ini')
@@ -131,6 +136,7 @@ def read_config():
 	FIXED_LOCATION = config.getboolean('Window', 'fixed_location')
 	FL_X = config.getint('Window', 'fixed_x')
 	FL_Y = config.getint('Window', 'fixed_y')
+	FONT_SIZE = config.getint('Other', 'font_size')
 	OPEN_ON_ENTER = config.getboolean('Other', 'open_on_enter_map')
 	CLIENT_PATH = config.get('Other', 'client_txt_path')
 
