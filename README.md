@@ -13,6 +13,7 @@ A little utility to put notes on your maps. Will add features as I think of them
 * `config.ini` settings:
 	* Hotkeys: set hotkeys for various actions. Special keys should be typed out literally in all lowercase ('ctrl', 'shift', 'alt'). Join keys with '+'.
 	* Window: `width` and `height` are the window size in pixels. `fixed_location` opens the window at [`fixed_x`, `fixed_y`] if true.
+	* `font_size` is the font size for the window's text.
 	* `open_on_enter` automatically opens the map's note on entering a map if true.
 	* `client_txt_path` is the full path to your client.txt file, without quotation marks.
 

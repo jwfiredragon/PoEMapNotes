@@ -108,7 +108,7 @@ class App(tk.Tk):
 	
 	def process_client_txt(self):
 		# https://stackoverflow.com/questions/62241472/using-python-and-tkinter-how-would-i-run-code-every-loop-of-mainloop
-		with open(CLIENT_PATH, 'r', encoding = 'utf8') as client_txt:
+		with open(CLIENT_PATH, 'r', encoding = 'utf8', errors = 'ignore') as client_txt:
 			lines = tailer.tail(client_txt, 6)
 
 			for line in lines:
