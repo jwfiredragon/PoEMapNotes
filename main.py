@@ -24,6 +24,7 @@ FL_Y = 0
 FONT_SIZE = 10
 OPEN_ON_ENTER = True
 CLIENT_PATH = 'C:\\Program Files (x86)\\Steam\\steamapps\\common\\Path of Exile\\logs\\Client.txt'
+FOCUS_ON_OPEN = True
 
 # https://stackoverflow.com/questions/50570446/python-tkinter-hide-and-show-window-via-hotkeys
 class App(tk.Tk):
@@ -81,7 +82,8 @@ class App(tk.Tk):
 
 		self.update()
 		self.deiconify()
-		self.editor.focus()
+		if FOCUS_ON_OPEN:
+			self.editor.focus()
 
 	def close(self):
 		self.update()
@@ -137,7 +139,7 @@ class App(tk.Tk):
 		self.after(100, self.process_client_txt)
 
 def read_config():
-	global MAP_NOTE_HOTKEY, GENERAL_NOTE_HOTKEY, WINDOW_WIDTH, WINDOW_HEIGHT, FIXED_LOCATION, FL_X, FL_Y, FONT_SIZE, OPEN_ON_ENTER, CLIENT_PATH
+	global MAP_NOTE_HOTKEY, GENERAL_NOTE_HOTKEY, WINDOW_WIDTH, WINDOW_HEIGHT, FIXED_LOCATION, FL_X, FL_Y, FONT_SIZE, OPEN_ON_ENTER, CLIENT_PATH, FOCUS_ON_OPEN
 
 	config = configparser.ConfigParser()
 	config.read('config.ini')
@@ -152,6 +154,7 @@ def read_config():
 	FONT_SIZE = config.getint('Other', 'font_size')
 	OPEN_ON_ENTER = config.getboolean('Other', 'open_on_enter_map')
 	CLIENT_PATH = config.get('Other', 'client_txt_path')
+	FOCUS_ON_OPEN = config.getboolean('Other', 'focus_on_open')
 
 if __name__ == '__main__':
 	u.gen_config()

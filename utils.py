@@ -75,7 +75,8 @@ def gen_config():
 					  ['Window', 'fixed_y', '0'],
 					  ['Other', 'font_size', '10'],
 					  ['Other', 'open_on_enter_map', 'true'],
-					  ['Other', 'client_txt_path', 'C:\\Program Files (x86)\\Steam\\steamapps\\common\\Path of Exile\\logs\\Client.txt']]
+					  ['Other', 'client_txt_path', 'C:\\Program Files (x86)\\Steam\\steamapps\\common\\Path of Exile\\logs\\Client.txt'],
+					  ['Other', 'focus_on_open', 'true']]
 
 	if not os.path.isfile('config.ini'):
 		config_file = open('config.ini', 'w')
