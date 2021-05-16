@@ -37,7 +37,7 @@ class App(tk.Tk):
 		self.geometry('400x200')
 		self.title('Main frame')
 		self.font = tkf.Font(size = FONT_SIZE)
-		self.button = tk.Button(self, text = 'Save and close', command = self.close)
+		self.button = tk.Button(self, text = 'Close', command = self.close)
 		self.button.pack(side = tk.BOTTOM)
 		self.editor = tk.Text(self, font = self.font)
 		self.editor.pack(fill = tk.BOTH)
@@ -63,19 +63,18 @@ class App(tk.Tk):
 	def render(self):
 		u.position_window(self, WINDOW_WIDTH, WINDOW_HEIGHT, FIXED_LOCATION, FL_X, FL_Y)
 
-		if not re.search('Error:', self.map_name):
-			with open(DATA_FILE, 'r') as csv_file:
-				reader = csv.reader(csv_file)
-				map_found = False
+		if not re.search('Error', self.map_name):
+			if self.map_name in map_data.MAP_LIST:
+				with open(DATA_FILE, 'r') as csv_file:
+					reader = csv.reader(csv_file)
 
-				for row in reader:
-					if re.search('^{}$'.format(self.map_name), row[0]):
-						map_found = True
-						u.render_window(self, self.editor, row[0], row[1])
-						break
+					for row in reader:
+						if re.search('^{}$'.format(self.map_name), row[0]):
+							u.render_window(self, self.editor, row[0], row[1])
+							break
 
-				if not map_found:
-					u.render_window(self, self.editor, 'Error', 'Error: Map not found.')
+			else:
+				u.render_window(self, self.editor, 'Error', 'Error: Map not found.')
 
 		else:
 			u.render_window(self, self.editor, 'Error', self.map_name)
@@ -85,27 +84,41 @@ class App(tk.Tk):
 		self.editor.focus()
 
 	def close(self):
+		self.update()
+		self.withdraw()
+
+	def update_note(self):
 		self.new_note = self.editor.get('1.0', 'end-1c')
 
-		if not re.search('Error:', self.new_note):
-			temp_file = NamedTemporaryFile('w+t', newline = '', delete = False)
+		if not re.search('Error', self.title()):
+			update_note = False
 
-			with open(DATA_FILE, 'r') as csv_file, temp_file:
+			with open(DATA_FILE, 'r') as csv_file:
 				reader = csv.reader(csv_file)
-				writer = csv.writer(temp_file)
 
 				for row in reader:
 					if re.search('^{}$'.format(self.map_name), row[0]):
-						writer.writerow([row[0], self.new_note])
-					else:
-						writer.writerow(row)
+						if not re.search('^{}$'.format(self.new_note), row[1]):
+							update_note = True
 
-			shutil.move(temp_file.name, DATA_FILE)
+			if update_note:
+				temp_file = NamedTemporaryFile('w+t', newline = '', delete = False)
+
+				with open(DATA_FILE, 'r') as csv_file, temp_file:
+					reader = csv.reader(csv_file)
+					writer = csv.writer(temp_file)
+
+					for row in reader:
+						if re.search('^{}$'.format(self.map_name), row[0]):
+							writer.writerow([row[0], self.new_note])
+						else:
+							writer.writerow(row)
+
+				shutil.move(temp_file.name, DATA_FILE)
 
 		self.new_note = ''
-		self.update()
-		self.withdraw()
-	
+		self.after(100, self.update_note)
+
 	def process_client_txt(self):
 		# https://stackoverflow.com/questions/62241472/using-python-and-tkinter-how-would-i-run-code-every-loop-of-mainloop
 		with open(CLIENT_PATH, 'r', encoding = 'utf8', errors = 'ignore') as client_txt:
@@ -146,6 +159,7 @@ if __name__ == '__main__':
 	read_config()
 
 	app = App()
+	app.after(100, app.update_note)
 	if OPEN_ON_ENTER:
 		app.after(100, app.process_client_txt)
 	app.mainloop()
