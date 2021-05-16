@@ -8,7 +8,7 @@ import tkinter as tk
 from tempfile import NamedTemporaryFile
 
 def parse_map_name(map_raw):
-	map_parse = map_raw.split('\n')
+	map_parse = map_raw.split("\r\n")
 
 	try:
 		if re.search('Map', map_parse[2]):
@@ -20,7 +20,21 @@ def parse_map_name(map_raw):
 	except IndexError:
 		return 'Error: Failed to parse map.'
 
-	# strip prefix/suffix as necessary
+	map_name = map_name.replace('Superior ', '')
+	map_name = map_name.split(' Map')[0]
+
+	if re.search('Unique', map_parse[1]):
+		# unidentified unique maps
+		if re.search('Map', map_parse[2]):
+			if map_name in map_data.UNIQUE_MAP_LIST:
+				return map_data.UNIQUE_MAP_LIST[map_name]
+			else:
+				return 'Error: Unrecognized unique map.'
+		# identified unique maps
+		else:
+			return map_parse[2]
+
+	# strip prefix for magic maps
 	# special exception for vaal pyramid because it's evil
 	# handling for vaal temple is literally impossible but those are usually rare anyways
 	if re.search('Magic', map_parse[1]) and not re.search('^Vaal Pyramid', map_name):
@@ -28,8 +42,6 @@ def parse_map_name(map_raw):
 			if map_name.split(' ')[0] == prefix:
 				map_name = map_name.replace(prefix + ' ', '')
 				break
-	map_name = map_name.replace('Superior ', '')
-	map_name = map_name.split(' Map')[0]
 
 	return map_name
 
