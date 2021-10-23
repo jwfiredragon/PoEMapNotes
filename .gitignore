@@ -1,6 +1,7 @@
 map_notes.csv
 config.ini
 .vscode/
+.pylintrc
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -1,17 +1,16 @@
 import configparser
 import csv
-import keyboard
-import map_data
-import math
-import pyperclip
 import re
 import shutil
-import tailer
 import tkinter as tk
 import tkinter.font as tkf
-import utils as u
-from pynput.keyboard import Key, Controller
 from tempfile import NamedTemporaryFile
+from pynput.keyboard import Key, Controller
+import keyboard
+import pyperclip
+import tailer
+import map_data
+import utils as u
 
 DATA_FILE = 'map_notes.csv'
 MAP_NOTE_HOTKEY = 'ctrl+shift+c'
@@ -28,6 +27,7 @@ FOCUS_ON_OPEN = True
 
 # https://stackoverflow.com/questions/50570446/python-tkinter-hide-and-show-window-via-hotkeys
 class App(tk.Tk):
+	"""The main window of the application"""
 	new_note = ''
 	map_name = ''
 	last_zone = ''
@@ -37,17 +37,18 @@ class App(tk.Tk):
 		super().__init__()
 		self.geometry('400x200')
 		self.title('Main frame')
-		self.font = tkf.Font(size = FONT_SIZE)
-		self.button = tk.Button(self, text = 'Close', command = self.close)
-		self.button.pack(side = tk.BOTTOM)
-		self.editor = tk.Text(self, font = self.font)
-		self.editor.pack(fill = tk.BOTH)
+		self.font = tkf.Font(size=FONT_SIZE)
+		self.button = tk.Button(self, text='Close', command=self.close)
+		self.button.pack(side=tk.BOTTOM)
+		self.editor = tk.Text(self, font=self.font)
+		self.editor.pack(fill=tk.BOTH)
 		self.withdraw()
 
 		keyboard.add_hotkey(MAP_NOTE_HOTKEY, self.open_map)
 		keyboard.add_hotkey(GENERAL_NOTE_HOTKEY, self.open_general)
 
 	def open_map(self):
+		"""Ctrl+Cs the map on the cursor and shows the main window"""
 		# Using pynput to send keys since keyboard.send is async and runs too late
 		Controller().press(Key.ctrl)
 		Controller().press('c')
@@ -58,10 +59,12 @@ class App(tk.Tk):
 		self.render()
 
 	def open_general(self):
+		"""Shows the main window for general note-taking"""
 		self.map_name = 'General Notes'
 		self.render()
 
 	def render(self):
+		"""Shows the main window with the specified position and text"""
 		u.position_window(self, WINDOW_WIDTH, WINDOW_HEIGHT, FIXED_LOCATION, FL_X, FL_Y)
 
 		if not re.search('Error', self.map_name):
@@ -86,10 +89,12 @@ class App(tk.Tk):
 			self.editor.focus()
 
 	def close(self):
+		"""Hides the main window"""
 		self.update()
 		self.withdraw()
 
 	def update_note(self):
+		"""Checks if the map note in the window has been changed, and updates the map note spreadsheet if so"""
 		self.new_note = self.editor.get('1.0', 'end-1c')
 
 		if not re.search('Error', self.title()):
@@ -104,7 +109,7 @@ class App(tk.Tk):
 							update_note = True
 
 			if update_note:
-				temp_file = NamedTemporaryFile('w+t', newline = '', delete = False)
+				temp_file = NamedTemporaryFile('w+t', newline='', delete=False)
 
 				with open(DATA_FILE, 'r') as csv_file, temp_file:
 					reader = csv.reader(csv_file)
@@ -122,8 +127,9 @@ class App(tk.Tk):
 		self.after(100, self.update_note)
 
 	def process_client_txt(self):
+		"""Checks client.txt to see if the player has entered a map"""
 		# https://stackoverflow.com/questions/62241472/using-python-and-tkinter-how-would-i-run-code-every-loop-of-mainloop
-		with open(CLIENT_PATH, 'r', encoding = 'utf8', errors = 'ignore') as client_txt:
+		with open(CLIENT_PATH, 'r', encoding='utf8', errors='ignore') as client_txt:
 			lines = tailer.tail(client_txt, 6)
 
 			for line in lines:
@@ -139,6 +145,7 @@ class App(tk.Tk):
 		self.after(100, self.process_client_txt)
 
 def read_config():
+	"""Reads config options from the config file into global variables"""
 	global MAP_NOTE_HOTKEY, GENERAL_NOTE_HOTKEY, WINDOW_WIDTH, WINDOW_HEIGHT, FIXED_LOCATION, FL_X, FL_Y, FONT_SIZE, OPEN_ON_ENTER, CLIENT_PATH, FOCUS_ON_OPEN
 
 	config = configparser.ConfigParser()
@@ -161,8 +168,8 @@ if __name__ == '__main__':
 	u.gen_map_list()
 	read_config()
 
-	app = App()
-	app.after(100, app.update_note)
+	APP = App()
+	APP.after(100, APP.update_note)
 	if OPEN_ON_ENTER:
-		app.after(100, app.process_client_txt)
-	app.mainloop()
+		APP.after(100, APP.process_client_txt)
+	APP.mainloop()

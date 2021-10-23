@@ -1,13 +1,14 @@
 import configparser
 import csv
-import map_data
 import os
 import re
 import shutil
 import tkinter as tk
 from tempfile import NamedTemporaryFile
+import map_data
 
 def parse_map_name(map_raw):
+	"""Takes the Ctrl+C text of a map and pareses out the map name"""
 	map_parse = map_raw.split("\r\n")
 
 	try:
@@ -46,11 +47,13 @@ def parse_map_name(map_raw):
 	return map_name
 
 def render_window(root, window, title, text):
+	"""Renders the main window with the specified title and text"""
 	root.title('PoE Map Notes: ' + title)
 	window.delete('1.0', tk.END)
 	window.insert(tk.END, text)
 
 def position_window(root, width, height, fixed_location, fl_x, fl_y):
+	"""Positions the window on the screen"""
 	if fixed_location:
 		window_pos = [fl_x, fl_y]
 	else:
@@ -66,6 +69,7 @@ def position_window(root, width, height, fixed_location, fl_x, fl_y):
 	root.geometry('%dx%d+%d+%d' %(width, height, window_pos[0], window_pos[1]))
 
 def gen_config():
+	"""Generates the config file, or updates an existing config file"""
 	config_default = [['Hotkeys', 'open_map_note', 'ctrl+shift+c'],
 					  ['Hotkeys', 'open_general_note', 'ctrl+shift+x'],
 					  ['Window', 'width', '400'],
@@ -96,15 +100,16 @@ def gen_config():
 
 
 def gen_map_list():
+	"""Generates the map notes spreadsheet, or updates an existing spreadsheet"""
 	if not os.path.isfile('map_notes.csv'):
 		new_note_file = open('map_notes.csv', 'w')
 		new_note_file.close()
 
 	# https://stackoverflow.com/questions/16020858/inline-csv-file-editing-with-python/16020923#16020923
 	note_file_name = 'map_notes.csv'
-	temp_file = NamedTemporaryFile('w+', newline = '', delete = False)
+	temp_file = NamedTemporaryFile('w+', newline='', delete=False)
 
-	with open(note_file_name, 'r', newline = '') as note_file, temp_file:
+	with open(note_file_name, 'r', newline='') as note_file, temp_file:
 		reader = csv.reader(note_file)
 		writer = csv.writer(temp_file)
 		map_list_curr = []
@@ -113,8 +118,8 @@ def gen_map_list():
 			map_list_curr.append(row[0])
 			writer.writerow(row)
 
-		map_list_diff = [map for map in map_data.MAP_LIST if map not in map_list_curr]
-		for map in map_list_diff:
-			writer.writerow([map, ''])
+		map_list_diff = [map_ for map_ in map_data.MAP_LIST if map_ not in map_list_curr]
+		for map_ in map_list_diff:
+			writer.writerow([map_, ''])
 
 	shutil.move(temp_file.name, note_file_name)
